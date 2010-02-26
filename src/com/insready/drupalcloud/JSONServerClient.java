@@ -44,7 +44,7 @@ import android.widget.Toast;
  * 
  * @author Jingsheng Wang A library on Android to communicate with Drupal
  */
-public class Cloud {
+public class JSONServerClient implements Client{
 	public HttpPost mSERVER;
 	public static String mAPI_KEY;
 	public static String mDOMAIN;
@@ -72,7 +72,7 @@ public class Cloud {
 	 * @param _session_lifetime
 	 *            Session lifetime
 	 */
-	public Cloud(Context _ctx, String _prefs_auth, String _server,
+	public JSONServerClient(Context _ctx, String _prefs_auth, String _server,
 			String _api_key, String _domain, String _algorithm,
 			Long _session_lifetime) {
 		mPREFS_AUTH = _prefs_auth;
@@ -112,21 +112,21 @@ public class Cloud {
 		Mac hmac;
 
 		try {
-			hmac = Mac.getInstance(Cloud.mALGORITHM);
+			hmac = Mac.getInstance(JSONServerClient.mALGORITHM);
 			final Long timestamp = new Date().getTime() / 100;
 			final String time = timestamp.toString();
-			hmac.init(new SecretKeySpec(Cloud.mAPI_KEY.getBytes(),
-					Cloud.mALGORITHM));
-			String message = time + ";" + Cloud.mDOMAIN + ";" + nonce + ";"
+			hmac.init(new SecretKeySpec(JSONServerClient.mAPI_KEY.getBytes(),
+					JSONServerClient.mALGORITHM));
+			String message = time + ";" + JSONServerClient.mDOMAIN + ";" + nonce + ";"
 					+ method;
 			hmac.update(message.getBytes());
 			String hmac_value = new String(Hex.encodeHex(hmac.doFinal()));
 			mPairs.add(new BasicNameValuePair("hash", hmac_value));
-			mPairs.add(new BasicNameValuePair("domain_name", Cloud.mDOMAIN));
+			mPairs.add(new BasicNameValuePair("domain_name", JSONServerClient.mDOMAIN));
 			mPairs.add(new BasicNameValuePair("domain_time_stamp", time));
 			mPairs.add(new BasicNameValuePair("nonce", nonce));
 			mPairs.add(new BasicNameValuePair("method", method));
-			mPairs.add(new BasicNameValuePair("api_key", Cloud.mAPI_KEY));
+			mPairs.add(new BasicNameValuePair("api_key", JSONServerClient.mAPI_KEY));
 			mPairs.add(new BasicNameValuePair("sessid", sessid));
 			for (int i = 0; i < parameters.length; i++) {
 				mPairs.add(parameters[i]);
@@ -167,7 +167,7 @@ public class Cloud {
 	}
 
 	/**
-	 * system.connect request
+	 * system.connect request for Key Auth
 	 */
 	private void systemConnect() {
 		// Cloud server hand shake
@@ -190,36 +190,16 @@ public class Cloud {
 
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			Toast.makeText(mCtx, "UnsupportedEncodingException",
-					Toast.LENGTH_LONG).show();
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
-			Toast.makeText(mCtx, "CientProtocolException", Toast.LENGTH_LONG)
-					.show();
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(mCtx, "IOException", Toast.LENGTH_LONG).show();
 		} catch (JSONException e) {
 			e.printStackTrace();
-			Toast
-					.makeText(
-							mCtx,
-							"JSONException Error: The connection to the remote server is corrupted. Please try it later. Make sure you have the latest client application installed.",
-							Toast.LENGTH_LONG).show();
 		}
 	}
 
-	/**
-	 * user.login request
-	 * 
-	 * @param username
-	 *            User name
-	 * @param password
-	 *            Password
-	 * @return result string
-	 * @throws JSONException
-	 *             Failed to save the session ID for the authenticated user
-	 */
+	@Override
 	public Boolean userLogin(String username, String password) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("username", username);
@@ -247,8 +227,6 @@ public class Cloud {
 			try {
 				jso = new JSONObject(result);
 				jso = new JSONObject(jso.getString("#data"));
-				Toast.makeText(mCtx, jso.getString("#message"),
-						Toast.LENGTH_LONG).show();
 				return jso.getBoolean("#error");
 			} catch (JSONException e1) {
 				e1.printStackTrace();
@@ -262,11 +240,7 @@ public class Cloud {
 		return false;
 	}
 
-	/**
-	 * user.logout request
-	 * 
-	 * @return result string
-	 */
+	@Override
 	public Boolean userLogout() {
 		SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
 		SharedPreferences.Editor editor = auth.edit();
@@ -303,35 +277,52 @@ public class Cloud {
 
 	}
 
-	/**
-	 * node.get request
-	 * 
-	 * @param nid
-	 *            Node ID
-	 * @param fields
-	 *            optional fields
-	 * @return result string
-	 */
+	@Override
 	public String nodeGet(int nid, String fields) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
 		parameters[1] = new BasicNameValuePair("fields", fields);
-		return call("node.get", parameters);
+		String temp = call("node.get", parameters);
+		/*try {
+			JSONObject jso = new JSONObject(temp);
+			jso = new JSONObject(jso.getString("#data"));
+			JSONArray nameArray = jso.names();
+			JSONArray valArray = jso.toJSONArray(nameArray);
+			for (int i=0;i<valArray.length();i++){
+				Log.i("Testing","<jsonmae"+i+">\n"+nameArray.getString(i)+"\n</jsonname"+i+">\n"
+						+"<jsonvalue"+i+">\n"+valArray.getString(i)+"\n</jsonvalue"+i+">");
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}*/
+		return temp;
 	}
 
-	/**
-	 * views.get request
-	 * 
-	 * @param view_name
-	 *            View name
-	 * @param args
-	 *            View arguments
-	 * @return result string
-	 */
+	@Override
 	public String viewsGet(String view_name, String args) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("view_name", view_name);
 		parameters[1] = new BasicNameValuePair("args", args);
 		return call("views.get", parameters);
 	}
+
+	@Override
+	public int commentSave(String comment) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public String flagFlag(String flagName, int contentId, int uid,
+			boolean action, boolean skipPermissionCheck) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean flagIsFlagged(String flagName, int contentId, int uid) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

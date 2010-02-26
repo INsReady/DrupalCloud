@@ -6,7 +6,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import com.insready.drupalcloud.Cloud;
+import com.insready.drupalcloud.JSONServerClient;
 
 public class Test extends Activity {
 	/** Called when the activity is first created. */
@@ -15,7 +15,7 @@ public class Test extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		TextView tv = (TextView) findViewById(R.id.text);
-		Cloud sandbox = new Cloud(this,
+		JSONServerClient sandbox = new JSONServerClient(this,
 				getString(R.string.sharedpreferences_name),
 				getString(R.string.SERVER), getString(R.string.API_KEY),
 				getString(R.string.DOMAIN), getString(R.string.ALGORITHM), Long
