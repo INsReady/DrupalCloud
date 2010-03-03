@@ -77,6 +77,7 @@ public class JSONServerClient implements Client{
 			Long _session_lifetime) {
 		mPREFS_AUTH = _prefs_auth;
 		mSERVER = new HttpPost(_server);
+		mSERVER.setHeader("User-Agent", "DrupalCloud-1.x");
 		mAPI_KEY = _api_key;
 		mDOMAIN = _domain;
 		mALGORITHM = _algorithm;
