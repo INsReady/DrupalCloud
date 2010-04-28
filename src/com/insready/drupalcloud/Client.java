@@ -16,6 +16,21 @@ public interface Client {
 	 * @return
 	 */
 	int commentSave(String comment);
+	
+	/**
+	 * This method returns all or part of the comments on a give node.
+	 * 
+	 * @param nid
+	 *            A node id.
+	 * @param count
+	 *            Number of comments to load.
+	 * @param start
+	 *            If count is set to non-zero value, you can pass also
+	 *            non-negative value for start. For example to get comments from
+	 *            5 to 15, pass count=10 and start=4.
+	 * @return
+	 */
+	String commentLoadNodeComments(int nid, int count, int start);
 
 	/**
 	 * Flags (or unflags) a content.

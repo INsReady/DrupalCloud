@@ -7,6 +7,12 @@ public class RESTServerClient implements Client {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
+	@Override
+	public String commentLoadNodeComments(int nid, int count, int start) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public String flagFlag(String flagName, int contentId, int uid,

@@ -312,6 +312,15 @@ public class JSONServerClient implements Client{
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
+	@Override
+	public String commentLoadNodeComments(int nid, int count, int start) {
+		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
+		parameters[1] = new BasicNameValuePair("count", String.valueOf(count));
+		parameters[2] = new BasicNameValuePair("start", String.valueOf(start));
+		return call("comment.loadNodeComments", parameters);
+	}
 
 	@Override
 	public String flagFlag(String flagName, int contentId, int uid,
