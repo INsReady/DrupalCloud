@@ -283,7 +283,7 @@ public class JSONServerClient implements Client{
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
 		parameters[1] = new BasicNameValuePair("fields", fields);
-		String temp = call("node.get", parameters);
+		String result = call("node.get", parameters);
 		/*try {
 			JSONObject jso = new JSONObject(temp);
 			jso = new JSONObject(jso.getString("#data"));
@@ -296,7 +296,8 @@ public class JSONServerClient implements Client{
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}*/
-		return temp;
+		result=result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
+		return result;
 	}
 
 	@Override
@@ -319,7 +320,10 @@ public class JSONServerClient implements Client{
 		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
 		parameters[1] = new BasicNameValuePair("count", String.valueOf(count));
 		parameters[2] = new BasicNameValuePair("start", String.valueOf(start));
-		return call("comment.loadNodeComments", parameters);
+		String result = call("comment.loadNodeComments", parameters);
+		// Convert other line breaks to Unix line breaks
+		result=result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
+		return result;
 	}
 
 	@Override
