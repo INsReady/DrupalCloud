@@ -310,9 +310,11 @@ public class JSONServerClient implements Client{
 
 	@Override
 	public int commentSave(String comment) {
-		// TODO Auto-generated method stub
-		return 0;
+		BasicNameValuePair[] parameters = new BasicNameValuePair[1];
+		parameters[0] = new BasicNameValuePair("comment", comment);
+		return Integer.valueOf(call("comment.save", parameters));
 	}
+
 	
 	@Override
 	public String commentLoadNodeComments(int nid, int count, int start) {
