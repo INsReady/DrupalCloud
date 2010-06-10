@@ -331,13 +331,38 @@ public class JSONServerClient implements Client{
 	@Override
 	public String flagFlag(String flagName, int contentId, int uid,
 			boolean action, boolean skipPermissionCheck) {
-		// TODO Auto-generated method stub
-		return null;
+		BasicNameValuePair[] parameters = new BasicNameValuePair[5];
+		parameters[0] = new BasicNameValuePair("flag_name", flagName);
+		parameters[1] = new BasicNameValuePair("content_id", String
+				.valueOf(contentId));
+		parameters[2] = new BasicNameValuePair("uid", String.valueOf(uid));
+		String actionName = (action) ? "flag" : "unflag";
+		parameters[3] = new BasicNameValuePair("action", actionName);
+		String skipPermissionCheckName = (skipPermissionCheck) ? "TRUE"
+				: "FALSE";
+		parameters[4] = new BasicNameValuePair("skip_permission_check",
+				skipPermissionCheckName);
+		String result = call("flag.flag", parameters);
+		return result;
 	}
 
 	@Override
 	public boolean flagIsFlagged(String flagName, int contentId, int uid) {
-		// TODO Auto-generated method stub
+		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		parameters[0] = new BasicNameValuePair("flag_name", flagName);
+		parameters[1] = new BasicNameValuePair("content_id", String
+				.valueOf(contentId));
+		parameters[2] = new BasicNameValuePair("uid", String.valueOf(uid));
+		String result = call("flag.is_flagged", parameters);
+
+		JSONObject jso;
+		try {
+			jso = new JSONObject(result);
+			boolean fav = jso.getBoolean("#data");
+			return fav;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		return false;
 	}
 
