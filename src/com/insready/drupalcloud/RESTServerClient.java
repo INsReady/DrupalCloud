@@ -15,10 +15,10 @@ public class RESTServerClient implements Client {
 	}
 
 	@Override
-	public String flagFlag(String flagName, int contentId, int uid,
+	public boolean flagFlag(String flagName, int contentId, int uid,
 			boolean action, boolean skipPermissionCheck) {
 		// TODO Auto-generated method stub
-		return null;
+		return false;
 	}
 
 	@Override

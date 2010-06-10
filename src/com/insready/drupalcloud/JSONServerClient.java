@@ -44,7 +44,7 @@ import android.widget.Toast;
  * 
  * @author Jingsheng Wang A library on Android to communicate with Drupal
  */
-public class JSONServerClient implements Client{
+public class JSONServerClient implements Client {
 	public HttpPost mSERVER;
 	public static String mAPI_KEY;
 	public static String mDOMAIN;
@@ -118,16 +118,18 @@ public class JSONServerClient implements Client{
 			final String time = timestamp.toString();
 			hmac.init(new SecretKeySpec(JSONServerClient.mAPI_KEY.getBytes(),
 					JSONServerClient.mALGORITHM));
-			String message = time + ";" + JSONServerClient.mDOMAIN + ";" + nonce + ";"
-					+ method;
+			String message = time + ";" + JSONServerClient.mDOMAIN + ";"
+					+ nonce + ";" + method;
 			hmac.update(message.getBytes());
 			String hmac_value = new String(Hex.encodeHex(hmac.doFinal()));
 			mPairs.add(new BasicNameValuePair("hash", hmac_value));
-			mPairs.add(new BasicNameValuePair("domain_name", JSONServerClient.mDOMAIN));
+			mPairs.add(new BasicNameValuePair("domain_name",
+					JSONServerClient.mDOMAIN));
 			mPairs.add(new BasicNameValuePair("domain_time_stamp", time));
 			mPairs.add(new BasicNameValuePair("nonce", nonce));
 			mPairs.add(new BasicNameValuePair("method", method));
-			mPairs.add(new BasicNameValuePair("api_key", JSONServerClient.mAPI_KEY));
+			mPairs.add(new BasicNameValuePair("api_key",
+					JSONServerClient.mAPI_KEY));
 			mPairs.add(new BasicNameValuePair("sessid", sessid));
 			for (int i = 0; i < parameters.length; i++) {
 				mPairs.add(parameters[i]);
@@ -284,19 +286,17 @@ public class JSONServerClient implements Client{
 		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
 		parameters[1] = new BasicNameValuePair("fields", fields);
 		String result = call("node.get", parameters);
-		/*try {
-			JSONObject jso = new JSONObject(temp);
-			jso = new JSONObject(jso.getString("#data"));
-			JSONArray nameArray = jso.names();
-			JSONArray valArray = jso.toJSONArray(nameArray);
-			for (int i=0;i<valArray.length();i++){
-				Log.i("Testing","<jsonmae"+i+">\n"+nameArray.getString(i)+"\n</jsonname"+i+">\n"
-						+"<jsonvalue"+i+">\n"+valArray.getString(i)+"\n</jsonvalue"+i+">");
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}*/
-		result=result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
+		/*
+		 * try { JSONObject jso = new JSONObject(temp); jso = new
+		 * JSONObject(jso.getString("#data")); JSONArray nameArray =
+		 * jso.names(); JSONArray valArray = jso.toJSONArray(nameArray); for
+		 * (int i=0;i<valArray.length();i++){
+		 * Log.i("Testing","<jsonmae"+i+">\n"+
+		 * nameArray.getString(i)+"\n</jsonname"+i+">\n"
+		 * +"<jsonvalue"+i+">\n"+valArray.getString(i)+"\n</jsonvalue"+i+">"); }
+		 * } catch (JSONException e) { e.printStackTrace(); }
+		 */
+		result = result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
 		return result;
 	}
 
@@ -315,7 +315,6 @@ public class JSONServerClient implements Client{
 		return Integer.valueOf(call("comment.save", parameters));
 	}
 
-	
 	@Override
 	public String commentLoadNodeComments(int nid, int count, int start) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
@@ -324,12 +323,12 @@ public class JSONServerClient implements Client{
 		parameters[2] = new BasicNameValuePair("start", String.valueOf(start));
 		String result = call("comment.loadNodeComments", parameters);
 		// Convert other line breaks to Unix line breaks
-		result=result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
+		result = result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
 		return result;
 	}
 
 	@Override
-	public String flagFlag(String flagName, int contentId, int uid,
+	public boolean flagFlag(String flagName, int contentId, int uid,
 			boolean action, boolean skipPermissionCheck) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[5];
 		parameters[0] = new BasicNameValuePair("flag_name", flagName);
@@ -343,7 +342,15 @@ public class JSONServerClient implements Client{
 		parameters[4] = new BasicNameValuePair("skip_permission_check",
 				skipPermissionCheckName);
 		String result = call("flag.flag", parameters);
-		return result;
+		JSONObject jso;
+		try {
+			jso = new JSONObject(result);
+			boolean flag = jso.getBoolean("#data");
+			return flag;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	@Override
@@ -358,8 +365,8 @@ public class JSONServerClient implements Client{
 		JSONObject jso;
 		try {
 			jso = new JSONObject(result);
-			boolean fav = jso.getBoolean("#data");
-			return fav;
+			boolean flag = jso.getBoolean("#data");
+			return flag;
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

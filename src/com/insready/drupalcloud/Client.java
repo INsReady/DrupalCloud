@@ -49,7 +49,7 @@ public interface Client {
 	 *            permission to do so. FALSE by default
 	 * @return
 	 */
-	String flagFlag(String flag_name, int content_id, int uid, boolean action,
+	boolean flagFlag(String flag_name, int content_id, int uid, boolean action,
 			boolean skip_permission_check);
 
 	/**
