@@ -221,7 +221,7 @@ public class JSONServerClient implements Client {
 			editor.putLong("sessionid_timestamp", new Date().getTime() / 100);
 			jso = new JSONObject(jso.getString("user"));
 			editor.putInt("uid", jso.getInt("uid"));
-			editor.putString("username", jso.getString("name"));
+			editor.putString("name", jso.getString("name"));
 			editor.putString("mail", jso.getString("mail"));
 			editor.commit();
 			return true;
@@ -312,7 +312,17 @@ public class JSONServerClient implements Client {
 	public int commentSave(String comment) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[1];
 		parameters[0] = new BasicNameValuePair("comment", comment);
-		return Integer.valueOf(call("comment.save", parameters));
+		String result = call("comment.save", parameters);
+
+		JSONObject jso;
+		try {
+			jso = new JSONObject(result);
+			int cid = jso.getInt("#data");
+			return cid;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return -1;
 	}
 
 	@Override
