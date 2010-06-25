@@ -34,7 +34,7 @@ public class RESTServerClient implements Client {
 	}
 
 	@Override
-	public Boolean userLogin(String username, String password) {
+	public String userLogin(String username, String password) {
 		// TODO Auto-generated method stub
 		return null;
 	}

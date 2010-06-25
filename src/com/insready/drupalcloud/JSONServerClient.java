@@ -203,44 +203,11 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public Boolean userLogin(String username, String password) {
+	public String userLogin(String username, String password) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("username", username);
 		parameters[1] = new BasicNameValuePair("password", password);
-
-		String result = call("user.login", parameters);
-		JSONObject jso;
-		try {
-			jso = new JSONObject(result);
-			jso = new JSONObject(jso.getString("#data"));
-
-			// Save user data to storage
-			SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
-			SharedPreferences.Editor editor = auth.edit();
-			editor.putString("sessionid", jso.getString("sessid"));
-			editor.putLong("sessionid_timestamp", new Date().getTime() / 100);
-			jso = new JSONObject(jso.getString("user"));
-			editor.putInt("uid", jso.getInt("uid"));
-			editor.putString("name", jso.getString("name"));
-			editor.putString("mail", jso.getString("mail"));
-			editor.commit();
-			return true;
-		} catch (JSONException e) {
-
-			try {
-				jso = new JSONObject(result);
-				jso = new JSONObject(jso.getString("#data"));
-				return jso.getBoolean("#error");
-			} catch (JSONException e1) {
-				e1.printStackTrace();
-				Toast
-						.makeText(
-								mCtx,
-								"JSONException Error: The connection to the remote server is corrupted. Please try it later. Make sure you have the latest client application installed.",
-								Toast.LENGTH_LONG).show();
-			}
-		}
-		return false;
+		return call("user.login", parameters);
 	}
 
 	@Override

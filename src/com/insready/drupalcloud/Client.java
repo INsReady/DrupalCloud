@@ -85,7 +85,7 @@ public interface Client {
 	 *            a valid password.
 	 * @return
 	 */
-	Boolean userLogin(String username, String password);
+	String userLogin(String username, String passwogrd);
 
 	/**
 	 * Logs out a user.
