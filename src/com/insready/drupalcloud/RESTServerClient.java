@@ -40,7 +40,7 @@ public class RESTServerClient implements Client {
 	}
 
 	@Override
-	public Boolean userLogout() {
+	public String userLogout(String sessionID) {
 		// TODO Auto-generated method stub
 		return null;
 	}

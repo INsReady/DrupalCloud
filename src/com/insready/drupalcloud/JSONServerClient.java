@@ -211,40 +211,10 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public Boolean userLogout() {
-		SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
-		SharedPreferences.Editor editor = auth.edit();
-
+	public String userLogout(String sessionID) {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[1];
-		String sessionid = auth.getString("sessionid", null);
-		String result = null;
-		if (sessionid != null) {
-			parameters[0] = new BasicNameValuePair("sessid", sessionid);
-			result = call("user.logout", parameters);
-			JSONObject jso;
-			try {
-				jso = new JSONObject(result);
-				if (jso.getBoolean("#data")) {
-					editor.remove("username");
-					editor.remove("uid");
-					editor.remove("mail");
-					editor.remove("sessionid");
-					editor.remove("sessionid_timestamp");
-					editor.commit();
-					return true;
-				} else
-					return false;
-			} catch (JSONException e) {
-				e.printStackTrace();
-				Toast
-						.makeText(
-								mCtx,
-								"JSONException Error: The connection to the remote server is corrupted. Please try it later. Make sure you have the latest client application installed.",
-								Toast.LENGTH_LONG).show();
-			}
-		}
-		return false;
-
+		parameters[0] = new BasicNameValuePair("sessid", sessionID);
+		return call("user.logout", parameters);
 	}
 
 	@Override

@@ -92,7 +92,7 @@ public interface Client {
 	 * 
 	 * @return
 	 */
-	Boolean userLogout();
+	String userLogout(String sessionID);
 
 	/**
 	 * Retrieves a view defined in views.module.
