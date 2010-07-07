@@ -32,17 +32,11 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.widget.Toast;
 
 /**
  * Services Server output formats that are currently supported:
- * <ul>
- * <li>JSON</li>
- * <li>XMLRPC (in the future)</li>
- * <li>JSON-RPC (when Services 3.x releases)</li>
- * </ul>
  * 
- * @author Jingsheng Wang A library on Android to communicate with Drupal
+ * @author Jingsheng Wang
  */
 public class JSONServerClient implements Client {
 	public HttpPost mSERVER;
@@ -85,7 +79,7 @@ public class JSONServerClient implements Client {
 		mCtx = _ctx;
 	}
 
-	private String getSessionID() {
+	private String getSessionID() throws ServiceNotAvailableException {
 		SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
 		Long timestamp = auth.getLong("sessionid_timestamp", 0);
 		Long currenttime = new Date().getTime() / 100;
@@ -106,7 +100,8 @@ public class JSONServerClient implements Client {
 	 *            Parameters
 	 * @return result string
 	 */
-	public String call(String method, BasicNameValuePair[] parameters) {
+	public String call(String method, BasicNameValuePair[] parameters)
+			throws ServiceNotAvailableException {
 		String sessid = this.getSessionID();
 		mPairs.clear();
 		String nonce = Integer.toString(new Random().nextInt());
@@ -136,35 +131,31 @@ public class JSONServerClient implements Client {
 			}
 			mSERVER.setEntity(new UrlEncodedFormEntity(mPairs));
 			HttpResponse response = mClient.execute(mSERVER);
-			InputStream result = response.getEntity().getContent();
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(result));
-			return br.readLine();
+			InputStream is = response.getEntity().getContent();
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+			String result = br.readLine();
+			JSONObject jso;
+			jso = new JSONObject(result);
+			boolean error = jso.getBoolean("#error");
+			if (error) {
+				String errorMsg = jso.getString("#data");
+				throw new ServiceNotAvailableException(this, errorMsg);
+			}
+			return result;
+
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
-			Toast
-					.makeText(
-							mCtx,
-							"NoSuchAlgorithmException: The configuration file is corrupted.",
-							Toast.LENGTH_LONG).show();
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
-			Toast
-					.makeText(
-							mCtx,
-							"InvalidKeyException: The configuration file is corrupted.",
-							Toast.LENGTH_LONG).show();
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
-			Toast.makeText(mCtx, "UnsupportedEncodingException",
-					Toast.LENGTH_LONG).show();
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
-			Toast.makeText(mCtx, "ClientProtocolException", Toast.LENGTH_LONG)
-					.show();
 		} catch (IOException e) {
 			e.printStackTrace();
-			Toast.makeText(mCtx, "IOException", Toast.LENGTH_LONG).show();
+		} catch (JSONException e) {
+			e.printStackTrace();
+			throw new ServiceNotAvailableException("Remote server is not available");
 		}
 		return null;
 	}
@@ -172,7 +163,7 @@ public class JSONServerClient implements Client {
 	/**
 	 * system.connect request for Key Auth
 	 */
-	private void systemConnect() {
+	private void systemConnect() throws ServiceNotAvailableException {
 		// Cloud server hand shake
 		mPairs.add(new BasicNameValuePair("method", "system.connect"));
 		try {
@@ -182,8 +173,13 @@ public class JSONServerClient implements Client {
 			BufferedReader br = new BufferedReader(
 					new InputStreamReader(result));
 			JSONObject jso = new JSONObject(br.readLine());
-			jso = new JSONObject(jso.getString("#data"));
+			boolean error = jso.getBoolean("#error");
+			String data = jso.getString("#data");
+			if (error) {
+				throw new ServiceNotAvailableException(this, data);
+			}
 
+			jso = new JSONObject(data);
 			// Save the sessionid to storage
 			SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
 			SharedPreferences.Editor editor = auth.edit();
@@ -203,7 +199,8 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public String userLogin(String username, String password) {
+	public String userLogin(String username, String password)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("username", username);
 		parameters[1] = new BasicNameValuePair("password", password);
@@ -211,14 +208,16 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public String userLogout(String sessionID) {
+	public String userLogout(String sessionID)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[1];
 		parameters[0] = new BasicNameValuePair("sessid", sessionID);
 		return call("user.logout", parameters);
 	}
 
 	@Override
-	public String nodeGet(int nid, String fields) {
+	public String nodeGet(int nid, String fields)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
 		parameters[1] = new BasicNameValuePair("fields", fields);
@@ -238,7 +237,8 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public String viewsGet(String view_name, String args) {
+	public String viewsGet(String view_name, String args)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("view_name", view_name);
 		parameters[1] = new BasicNameValuePair("args", args);
@@ -246,7 +246,7 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public int commentSave(String comment) {
+	public int commentSave(String comment) throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[1];
 		parameters[0] = new BasicNameValuePair("comment", comment);
 		String result = call("comment.save", parameters);
@@ -263,7 +263,8 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public String commentLoadNodeComments(int nid, int count, int start) {
+	public String commentLoadNodeComments(int nid, int count, int start)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
 		parameters[0] = new BasicNameValuePair("nid", String.valueOf(nid));
 		parameters[1] = new BasicNameValuePair("count", String.valueOf(count));
@@ -276,7 +277,8 @@ public class JSONServerClient implements Client {
 
 	@Override
 	public boolean flagFlag(String flagName, int contentId, int uid,
-			boolean action, boolean skipPermissionCheck) {
+			boolean action, boolean skipPermissionCheck)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[5];
 		parameters[0] = new BasicNameValuePair("flag_name", flagName);
 		parameters[1] = new BasicNameValuePair("content_id", String
@@ -301,7 +303,8 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public boolean flagIsFlagged(String flagName, int contentId, int uid) {
+	public boolean flagIsFlagged(String flagName, int contentId, int uid)
+			throws ServiceNotAvailableException {
 		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
 		parameters[0] = new BasicNameValuePair("flag_name", flagName);
 		parameters[1] = new BasicNameValuePair("content_id", String

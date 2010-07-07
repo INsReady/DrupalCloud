@@ -7,6 +7,7 @@ package com.insready.drupalcloud;
  * @author Jingsheng Wang
  * 
  */
+@SuppressWarnings("serial")
 public class ServiceNotAvailableException extends Exception {
 
 	public ServiceNotAvailableException(String msg) {
@@ -16,5 +17,4 @@ public class ServiceNotAvailableException extends Exception {
 	public ServiceNotAvailableException(Client client, String msg) {
 		super(client.toString() + " " + msg);
 	}
-
 }

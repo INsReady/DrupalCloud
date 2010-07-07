@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.insready.drupalcloud.JSONServerClient;
+import com.insready.drupalcloud.ServiceNotAvailableException;
 
 public class Test extends Activity {
 	/** Called when the activity is first created. */
@@ -22,7 +23,12 @@ public class Test extends Activity {
 						.parseLong(getString(R.string.SESSION_LIFETIME)));
 		BasicNameValuePair[] bnvp = new BasicNameValuePair[1];
 		bnvp[0] = new BasicNameValuePair("nid", "43672");
-		String result = sandbox.call("node.get", bnvp);
+		String result = null;
+		try {
+			result = sandbox.call("node.get", bnvp);
+		} catch (ServiceNotAvailableException e) {
+			e.printStackTrace();
+		}
 		tv.setText(result);
 	}
 }
