@@ -109,5 +109,6 @@ public interface Client {
 	 * @return
 	 * @throws ServiceNotAvailableException 
 	 */
-	String viewsGet(String view_name, String args) throws ServiceNotAvailableException;
+	String viewsGet(String view_name, String display_id, String args,
+			int offset, int limit) throws ServiceNotAvailableException;
 }

@@ -237,11 +237,14 @@ public class JSONServerClient implements Client {
 	}
 
 	@Override
-	public String viewsGet(String view_name, String args)
-			throws ServiceNotAvailableException {
-		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
+	public String viewsGet(String view_name, String display_id, String args,
+			int offset, int limit) throws ServiceNotAvailableException {
+		BasicNameValuePair[] parameters = new BasicNameValuePair[5];
 		parameters[0] = new BasicNameValuePair("view_name", view_name);
 		parameters[1] = new BasicNameValuePair("args", args);
+		parameters[2] = new BasicNameValuePair("display_id", display_id);
+		parameters[3] = new BasicNameValuePair("offset", offset + "");
+		parameters[4] = new BasicNameValuePair("limit", limit + "");
 		return call("views.get", parameters);
 	}
 

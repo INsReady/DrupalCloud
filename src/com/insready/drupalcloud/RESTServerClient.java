@@ -46,7 +46,8 @@ public class RESTServerClient implements Client {
 	}
 
 	@Override
-	public String viewsGet(String viewName, String args) {
+	public String viewsGet(String view_name, String display_id, String args,
+			int offset, int limit) {
 		// TODO Auto-generated method stub
 		return null;
 	}
