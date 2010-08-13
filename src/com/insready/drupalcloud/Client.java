@@ -33,6 +33,16 @@ public interface Client {
 	 * @throws ServiceNotAvailableException 
 	 */
 	String commentLoadNodeComments(int nid, int count, int start) throws ServiceNotAvailableException;
+	
+	/**
+	 * This method returns a single comment object
+	 * 
+	 * @param cid
+	 *            a comment id
+	 * @return
+	 * @throws ServiceNotAvailableException
+	 */
+	String commentLoad(int cid) throws ServiceNotAvailableException;
 
 	/**
 	 * Flags (or unflags) a content.

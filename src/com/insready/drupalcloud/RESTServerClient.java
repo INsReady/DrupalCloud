@@ -13,6 +13,12 @@ public class RESTServerClient implements Client {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public String commentLoad(int cid) throws ServiceNotAvailableException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 	@Override
 	public boolean flagFlag(String flagName, int contentId, int uid,

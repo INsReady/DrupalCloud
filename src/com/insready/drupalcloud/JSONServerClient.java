@@ -277,6 +277,14 @@ public class JSONServerClient implements Client {
 		result = result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
 		return result;
 	}
+	
+	@Override
+	public String commentLoad(int cid) throws ServiceNotAvailableException {
+		BasicNameValuePair[] parameters = new BasicNameValuePair[1];
+		parameters[0] = new BasicNameValuePair("cid", String.valueOf(cid));
+		String result = call("comment.load", parameters);
+		return result;
+	}
 
 	@Override
 	public boolean flagFlag(String flagName, int contentId, int uid,
