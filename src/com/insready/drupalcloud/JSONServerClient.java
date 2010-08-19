@@ -232,7 +232,6 @@ public class JSONServerClient implements Client {
 		 * +"<jsonvalue"+i+">\n"+valArray.getString(i)+"\n</jsonvalue"+i+">"); }
 		 * } catch (JSONException e) { e.printStackTrace(); }
 		 */
-		result = result.replaceAll("(\\\\r\\\\n|\\\\r)", "\\\\n");
 		return result;
 	}
 
