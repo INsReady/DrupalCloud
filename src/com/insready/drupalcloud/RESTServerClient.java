@@ -15,7 +15,7 @@ import java.util.Random;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.commons.codec.binary.Hex;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -27,6 +27,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import com.insready.drupalcloud.Client;
+import com.insready.drupalcloud.ServiceNotAvailableException;
 
 import android.content.Context;
 
@@ -44,13 +47,12 @@ public class RESTServerClient implements Client {
 		url = _server;
 	}
 	
-	public String call(String method, BasicNameValuePair[] parameters)
+	public String call(String url, BasicNameValuePair[] parameters)
 			throws ServiceNotAvailableException {
-
+		mSERVERPOST = new HttpPost(url);
 		try {
 			mPairs.add(new BasicNameValuePair("domain_name",
 					RESTServerClient.mDOMAIN));
-			mPairs.add(new BasicNameValuePair("method", method));
 			for (int i = 0; i < parameters.length; i++) {
 				mPairs.add(parameters[i]);
 			}
@@ -59,13 +61,13 @@ public class RESTServerClient implements Client {
 			InputStream is = response.getEntity().getContent();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			String result = br.readLine();
-			JSONObject jso;
+		/*	JSONObject jso;
 			jso = new JSONObject(result);
 			boolean error = jso.getBoolean("#error");
 			if (error) {
 				String errorMsg = jso.getString("#data");
 				throw new ServiceNotAvailableException(this, errorMsg);
-			}
+			}*/
 			return result;
 
 		}  catch (UnsupportedEncodingException e) {
@@ -74,14 +76,11 @@ public class RESTServerClient implements Client {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (JSONException e) {
-			e.printStackTrace();
-			throw new ServiceNotAvailableException("Remote server is not available");
 		}
 		return null;
 	}
 	
-	public String callGET(String url) throws ServiceNotAvailableException {
+	public String callGet(String url) throws ServiceNotAvailableException {
    	    mSERVERGET = new HttpGet(url);
         
 		try {
@@ -114,8 +113,8 @@ public class RESTServerClient implements Client {
 	@Override
 	public String nodeGet(int nid, String fields) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
-		url = url + "node" + "/" + nid;
-		String result = callGET(url);
+		url = url + "node/" + nid;
+		String result = callGet(url);
 		return result;
 	}
 	
@@ -139,17 +138,54 @@ public class RESTServerClient implements Client {
 
 	@Override
 	public boolean flagFlag(String flagName, int contentId, int uid,
-			boolean action, boolean skipPermissionCheck) {
+			boolean action, boolean skipPermissionCheck) throws ServiceNotAvailableException{
 		// TODO Auto-generated method stub
+		url = url + "flag/flag";
+		BasicNameValuePair[] parameters = new BasicNameValuePair[5];
+		parameters[0] = new BasicNameValuePair("flag_name", flagName);
+		parameters[1] = new BasicNameValuePair("content_id", String
+				.valueOf(contentId));
+		parameters[2] = new BasicNameValuePair("uid", String.valueOf(uid));
+		String actionName = (action) ? "flag" : "unflag";
+		parameters[3] = new BasicNameValuePair("action", actionName);
+		String skipPermissionCheckName = (skipPermissionCheck) ? "TRUE"
+				: "FALSE";
+		parameters[4] = new BasicNameValuePair("skip_permission_check",
+				skipPermissionCheckName);
+		String result = call(url, parameters);
+		JSONObject jso;
+		try {
+			jso = new JSONObject(result);
+			boolean flag = jso.getBoolean("#data");
+			return flag;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		return false;
 	}
-
+	
 	@Override
-	public boolean flagIsFlagged(String flagName, int contentId, int uid) {
+	public boolean flagIsFlagged(String flagName, int contentId, int uid) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
+		url = url + "flag/flag_isflaged";
+		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		parameters[0] = new BasicNameValuePair("flag_name", flagName);
+		parameters[1] = new BasicNameValuePair("content_id", String
+				.valueOf(contentId));
+		parameters[2] = new BasicNameValuePair("uid", String.valueOf(uid));
+		String result = call(url, parameters);
+
+		JSONObject jso;
+		try {
+			jso = new JSONObject(result);
+			boolean flag = jso.getBoolean("");
+			return flag;
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 		return false;
 	}
-
+	
 	@Override
 	public String userLogin(String username, String password) {
 		// TODO Auto-generated method stub
@@ -164,9 +200,11 @@ public class RESTServerClient implements Client {
 
 	@Override
 	public String viewsGet(String view_name, String display_id, String args,
-			int offset, int limit) {
+			int offset, int limit) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
-		return null;
+		url = url + "views/" + view_name + "?args=" + args;
+		String result = callGet(url);
+		return result;
 	}
 
 }
