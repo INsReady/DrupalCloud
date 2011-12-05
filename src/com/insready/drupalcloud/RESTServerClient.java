@@ -32,6 +32,7 @@ import com.insready.drupalcloud.Client;
 import com.insready.drupalcloud.ServiceNotAvailableException;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 
 public class RESTServerClient implements Client {
 	public HttpGet mSERVERGET;
@@ -40,19 +41,41 @@ public class RESTServerClient implements Client {
 	public static String mDOMAIN;
 	private HttpClient mClient = new DefaultHttpClient();
 	private List<NameValuePair> mPairs = new ArrayList<NameValuePair>(15);
+	private Context mCtx;
+	private final String mPREFS_AUTH;
+	public static Long mSESSION_LIFETIME;
 	
 
-	public RESTServerClient(String _server,	String _domain) {
+	public RESTServerClient(Context _ctx, String _prefs_auth, String _server,	String _domain, Long _session_lifetime) {
+		mPREFS_AUTH = _prefs_auth;
 		mDOMAIN = _domain;
 		url = _server;
+		mCtx = _ctx;
+		mSESSION_LIFETIME = _session_lifetime;
+	}
+	
+	private String getSessionID() throws ServiceNotAvailableException {
+		SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
+		Long timestamp = auth.getLong("sessionid_timestamp", 0);
+		Long currenttime = new Date().getTime() / 100;
+		String sessionid = auth.getString("sessionid", null);
+		if (sessionid == null || (currenttime - timestamp) >= mSESSION_LIFETIME) {
+			systemConnect();
+			return getSessionID();
+		} else
+			return sessionid;
 	}
 	
 	public String call(String url, BasicNameValuePair[] parameters)
 			throws ServiceNotAvailableException {
 		mSERVERPOST = new HttpPost(url);
+		String sessid = this.getSessionID();
+		mPairs.clear();
 		try {
-			mPairs.add(new BasicNameValuePair("domain_name",
-					RESTServerClient.mDOMAIN));
+			final Long timestamp = new Date().getTime() / 100;
+			final String time = timestamp.toString();
+			mPairs.add(new BasicNameValuePair("domain_time_stamp", time));
+			mPairs.add(new BasicNameValuePair("sessid", sessid));
 			for (int i = 0; i < parameters.length; i++) {
 				mPairs.add(parameters[i]);
 			}
@@ -88,33 +111,55 @@ public class RESTServerClient implements Client {
 			InputStream is = response.getEntity().getContent();
 			BufferedReader br = new BufferedReader(new InputStreamReader(is));
 			String result = br.readLine();
-//		JSONObject jso;
-/*			jso = new JSONObject(result);
-			String error = jso.getString("Null");
-			if (error == "NULL") {
-				String errorMsg = "Node does not exist";
-				throw new ServiceNotAvailableException(this, errorMsg);
-			}*/
 			return result;
-
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		} /*catch (JSONException e) {
-			e.printStackTrace();
-			throw new ServiceNotAvailableException("Remote server is not available");
-		}*/
+		} 
 		return null;
+	}
+	
+	private void systemConnect() throws ServiceNotAvailableException {
+		// Cloud server hand shake
+		String uri = url + "system/connect";
+		mSERVERPOST = new HttpPost(uri);
+		try {
+			HttpResponse response = mClient.execute(mSERVERPOST);
+			InputStream result = response.getEntity().getContent();
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(result));
+			String tmp = br.readLine();
+			if (tmp == null) {
+				throw new ServiceNotAvailableException(this, "Invalid method");
+			}
+			JSONObject jso = new JSONObject(tmp);
+			// Save the sessionid to storage
+			SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
+			SharedPreferences.Editor editor = auth.edit();
+			editor.putString("sessionid", jso.getString("sessid"));
+			editor.putLong("sessionid_timestamp", new Date().getTime() / 100);
+			editor.commit();
+		
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
 	public String nodeGet(int nid, String fields) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
-		url = url + "node/" + nid;
-		String result = callGet(url);
+		String uri = url + "node/" + nid;
+		String result = callGet(uri);
 		return result;
 	}
 	
@@ -140,7 +185,7 @@ public class RESTServerClient implements Client {
 	public boolean flagFlag(String flagName, int contentId, int uid,
 			boolean action, boolean skipPermissionCheck) throws ServiceNotAvailableException{
 		// TODO Auto-generated method stub
-		url = url + "flag/flag";
+		String uri = url + "flag/flag";
 		BasicNameValuePair[] parameters = new BasicNameValuePair[5];
 		parameters[0] = new BasicNameValuePair("flag_name", flagName);
 		parameters[1] = new BasicNameValuePair("content_id", String
@@ -152,7 +197,7 @@ public class RESTServerClient implements Client {
 				: "FALSE";
 		parameters[4] = new BasicNameValuePair("skip_permission_check",
 				skipPermissionCheckName);
-		String result = call(url, parameters);
+		String result = call(uri, parameters);
 		JSONObject jso;
 		try {
 			jso = new JSONObject(result);
@@ -167,43 +212,57 @@ public class RESTServerClient implements Client {
 	@Override
 	public boolean flagIsFlagged(String flagName, int contentId, int uid) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
-		url = url + "flag/flag_isflaged";
+		String uri = url + "flag/flag_isflaged";
 		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
 		parameters[0] = new BasicNameValuePair("flag_name", flagName);
 		parameters[1] = new BasicNameValuePair("content_id", String
 				.valueOf(contentId));
 		parameters[2] = new BasicNameValuePair("uid", String.valueOf(uid));
-		String result = call(url, parameters);
+		String result = call(uri, parameters);
 
 		JSONObject jso;
 		try {
 			jso = new JSONObject(result);
 			boolean flag = jso.getBoolean("");
 			return flag;
-		} catch (JSONException e) {
+		} catch (JSONException e) {	
 			e.printStackTrace();
 		}
-		return false;
+		return false;		
 	}
 	
 	@Override
-	public String userLogin(String username, String password) {
-		// TODO Auto-generated method stub
-		return null;
+	public String userLogin(String username, String password) throws ServiceNotAvailableException {
+		// TODO Auto-generated method stub<?xml version="1.0" encoding="utf-8"?>
+		String uri = url + "user/login";
+		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
+		parameters[0] = new BasicNameValuePair("username", username);
+		parameters[1] = new BasicNameValuePair("password", password);
+		return call(uri, parameters);
 	}
-
+	
 	@Override
-	public String userLogout(String sessionID) {
+	public String userLogout(String sessionID) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
-		return null;
+		BasicNameValuePair[] parameters = new BasicNameValuePair[0];
+		//parameters[0] = new BasicNameValuePair("sessid", sessionID);
+		String uri = url + "user/logout";
+		return call(uri, parameters);
 	}
 
 	@Override
 	public String viewsGet(String view_name, String display_id, String args,
 			int offset, int limit) throws ServiceNotAvailableException {
 		// TODO Auto-generated method stub
-		url = url + "views/" + view_name + "?args=" + args;
-		String result = callGet(url);
+		String uri = url + "views/" + view_name + "?";
+		String[] ary = args.split("/");
+		int arylength = ary.length;
+		String arg = "args[0]=" + ary[0] + "&";
+		for(int i=1; i < arylength; i++) {
+		  arg += "args[" + i + "]=" + ary[i] + "&";
+		}
+		uri = uri + arg;
+		String result = callGet(uri);
 		return result;
 	}
 

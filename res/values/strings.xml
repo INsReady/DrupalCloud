@@ -3,9 +3,9 @@
     <string name="hello">Hello World, Shell!</string>
     <string name="app_name">SandBox</string>
     <string name="sharedpreferences_name">UserAuth</string>
-    <string name="SERVER"></string>
+    <string name="SERVER">http://callerid.insready.com/android/</string>
     <string name="API_KEY"></string>
-    <string name="DOMAIN"></string>
+    <string name="DOMAIN">callerid.insready.com</string>
     <string name="ALGORITHM">HmacSHA256</string>
     <string name="SESSION.LIFETIME">1209600</string>
 </resources>
