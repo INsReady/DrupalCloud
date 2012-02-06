@@ -1,6 +1,5 @@
 package test.demo;
 
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.TextView;
@@ -15,14 +14,16 @@ public class Test extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		TextView tv = (TextView) findViewById(R.id.text);
-		RESTServerClient sandbox = new RESTServerClient(
-				getString(R.string.SERVER), getString(R.string.DOMAIN));
+		RESTServerClient sandbox = new RESTServerClient(this,
+				getString(R.string.sharedpreferences_name),
+				getString(R.string.SERVER), getString(R.string.DOMAIN),
+				Long.valueOf(getString(R.string.SESSION_LIFETIME)));
 		String result = null;
 		try {
-			//result = sandbox.nodeGet(2,"");
+			// result = sandbox.nodeGet(2,"");
 			Boolean haha = sandbox.flagIsFlagged("spam", 2, 2);
-			if(haha = false){
-			    result = "this content is flagged";
+			if (haha = false) {
+				result = "this content is flagged";
 			} else {
 				result = "this content is not flagged";
 			}
