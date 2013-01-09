@@ -9,6 +9,12 @@ Setup for development:
 1. Import this library to your IDE (Eclipse), and check this project as a library
 2. Create your a new project, and configure it to use DrupalCloud library 
 
+Server Required settings:
+For RESTServerClient (Drupal 7.x):
+/admin/structure/services/list/mobile_commerce/server
+Response formatters: json
+Request parsing: application/x-www-form-urlencoded 
+
 Testing:
 1. Server end: configure your Drupal, Services (endpoints), create a node and so on
 2. Put your endpoints configuration into value.xml (see the pattern)
