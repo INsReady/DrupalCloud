@@ -59,6 +59,18 @@ public class RESTServerClient {
 			return sessionid;
 	}
 
+	private String getSession() throws ServiceNotAvailableException {
+		SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
+		Long timestamp = auth.getLong("sessionid_timestamp", 0);
+		Long currenttime = new Date().getTime() / 100;
+		String session = auth.getString("session", null);
+		if (session.length() == 0
+				|| (currenttime - timestamp) >= mSESSION_LIFETIME) {
+			return null;
+		} else
+			return session;
+	}
+
 	public String call(String url, BasicNameValuePair[] parameters)
 			throws ServiceNotAvailableException {
 		mSERVERPOST = new HttpPost(url);
@@ -95,11 +107,33 @@ public class RESTServerClient {
 		return null;
 	}
 
+	public InputStreamReader callPost(String url,
+			BasicNameValuePair[] parameters)
+			throws ServiceNotAvailableException {
+		mSERVERPOST = new HttpPost(url);
+		try {
+			mSERVERGET.setHeader("Cookie", getSession());
+			HttpResponse response = mClient.execute(mSERVERGET);
+			InputStream is = response.getEntity().getContent();
+			InputStreamReader isr = new InputStreamReader(is, "UTF-8");
+			return isr;
+
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public InputStreamReader callGet(String url)
 			throws ServiceNotAvailableException {
 		mSERVERGET = new HttpGet(url);
 
 		try {
+			mSERVERGET.setHeader("Cookie", getSession());
 			HttpResponse response = mClient.execute(mSERVERGET);
 			InputStream is = response.getEntity().getContent();
 			InputStreamReader isr = new InputStreamReader(is, "UTF-8");
@@ -150,9 +184,25 @@ public class RESTServerClient {
 
 	public JsonReader nodeGet(int nid, String fields)
 			throws ServiceNotAvailableException {
-		// TODO Auto-generated method stub
 		String uri = mENDPOIN + "node/" + nid;
 		JsonReader jsr = new JsonReader(callGet(uri));
+		return jsr;
+	}
+
+	public JsonReader taxonomyVocabGetTree(int vid)
+			throws ServiceNotAvailableException {
+		return taxonomyVocabGetTree(vid, 0, "Null");
+	}
+
+	public JsonReader taxonomyVocabGetTree(int vid, int parent, String maxdepth)
+			throws ServiceNotAvailableException {
+		String uri = mENDPOIN + "taxonomy_vocabulary/gettree";
+		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		parameters[0] = new BasicNameValuePair("vid", String.valueOf(vid));
+		parameters[1] = new BasicNameValuePair("parent", String.valueOf(parent));
+		parameters[2] = new BasicNameValuePair("maxdepth", maxdepth);
+
+		JsonReader jsr = new JsonReader(callPost(uri, parameters));
 		return jsr;
 	}
 
@@ -221,14 +271,34 @@ public class RESTServerClient {
 		return false;
 	}
 
-	public String userLogin(String username, String password)
-			throws ServiceNotAvailableException {
-		// TODO Auto-generated method stub<?xml version="1.0" encoding="utf-8"?>
+	public JsonReader userLogin(String username, String password)
+			throws ServiceNotAvailableException, IOException {
 		String uri = mENDPOIN + "user/login";
 		BasicNameValuePair[] parameters = new BasicNameValuePair[2];
 		parameters[0] = new BasicNameValuePair("username", username);
 		parameters[1] = new BasicNameValuePair("password", password);
-		return call(uri, parameters);
+		JsonReader jsr = new JsonReader(callPost(uri, parameters));
+
+		String session = null;
+
+		jsr.beginObject();
+		while (jsr.hasNext()) {
+			String name = jsr.nextName();
+			if (name.equals("session_name")) {
+				session = jsr.nextString() + "=";
+			} else if (name.equals("session_name")) {
+				session += jsr.nextString();
+			} else {
+				jsr.skipValue();
+			}
+		}
+
+		SharedPreferences auth = mCtx.getSharedPreferences(mPREFS_AUTH, 0);
+		SharedPreferences.Editor editor = auth.edit();
+		editor.putString("session", session);
+		editor.commit();
+
+		return jsr;
 	}
 
 	public String userLogout(String sessionID)
