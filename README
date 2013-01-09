@@ -1,0 +1,17 @@
+DrupalCloud is a library for native Android applications to communicate with Drupal web services.
+
+At the moment, there are two kinds of implementations.
+
+1. JSONServerClient: works for Drupal 6.x with Services 2.x and Key Authentication
+2. RESTServerClient: works for Drupal 7.x with Services 3.x and Session Authentication
+
+Setup for development:
+1. Import this library to your IDE (Eclipse), and check this project as a library
+2. Create your a new project, and configure it to use DrupalCloud library 
+
+Testing:
+1. Server end: configure your Drupal, Services (endpoints), create a node and so on
+2. Put your endpoints configuration into value.xml (see the pattern)
+3. Run DrupalCloud project as an Android application
+4. If you see the content of your node 1, then you complete the hello world testing.
+
