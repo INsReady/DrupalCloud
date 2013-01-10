@@ -64,8 +64,7 @@ public class RESTServerClient {
 		Long timestamp = auth.getLong("sessionid_timestamp", 0);
 		Long currenttime = new Date().getTime() / 100;
 		String session = auth.getString("session", null);
-		if (session.length() == 0
-				|| (currenttime - timestamp) >= mSESSION_LIFETIME) {
+		if (session == null || (currenttime - timestamp) >= mSESSION_LIFETIME) {
 			return null;
 		} else
 			return session;
@@ -111,9 +110,16 @@ public class RESTServerClient {
 			BasicNameValuePair[] parameters)
 			throws ServiceNotAvailableException {
 		mSERVERPOST = new HttpPost(url);
+		mPairs.clear();
 		try {
-			mSERVERGET.setHeader("Cookie", getSession());
-			HttpResponse response = mClient.execute(mSERVERGET);
+			if (getSession() != null) {
+				mSERVERPOST.setHeader("Cookie", getSession());
+			}
+			for (int i = 0; i < parameters.length; i++) {
+				mPairs.add(parameters[i]);
+			}
+			mSERVERPOST.setEntity(new UrlEncodedFormEntity(mPairs));
+			HttpResponse response = mClient.execute(mSERVERPOST);
 			InputStream is = response.getEntity().getContent();
 			InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 			return isr;
@@ -191,16 +197,23 @@ public class RESTServerClient {
 
 	public JsonReader taxonomyVocabGetTree(int vid)
 			throws ServiceNotAvailableException {
-		return taxonomyVocabGetTree(vid, 0, "Null");
+		return taxonomyVocabGetTree(vid, 0, 0);
 	}
 
-	public JsonReader taxonomyVocabGetTree(int vid, int parent, String maxdepth)
+	public JsonReader taxonomyVocabGetTree(int vid, int parent, int maxdepth)
 			throws ServiceNotAvailableException {
-		String uri = mENDPOIN + "taxonomy_vocabulary/gettree";
-		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		String uri = mENDPOIN + "taxonomy_vocabulary/getTree";
+		int size = 2;
+		BasicNameValuePair[] parameters = null;
+		if (maxdepth != 0) {
+			size = 3;
+			parameters = new BasicNameValuePair[size];
+			parameters[2] = new BasicNameValuePair("maxdepth",
+					String.valueOf(maxdepth));
+		}
+		parameters = new BasicNameValuePair[size];
 		parameters[0] = new BasicNameValuePair("vid", String.valueOf(vid));
 		parameters[1] = new BasicNameValuePair("parent", String.valueOf(parent));
-		parameters[2] = new BasicNameValuePair("maxdepth", maxdepth);
 
 		JsonReader jsr = new JsonReader(callPost(uri, parameters));
 		return jsr;
@@ -324,5 +337,4 @@ public class RESTServerClient {
 		// TODO String result = callGet(uri);
 		return null;
 	}
-
 }
