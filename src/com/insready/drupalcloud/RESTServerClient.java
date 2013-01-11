@@ -210,8 +210,10 @@ public class RESTServerClient {
 			parameters = new BasicNameValuePair[size];
 			parameters[2] = new BasicNameValuePair("maxdepth",
 					String.valueOf(maxdepth));
+		}else {
+			parameters = new BasicNameValuePair[size];
 		}
-		parameters = new BasicNameValuePair[size];
+		
 		parameters[0] = new BasicNameValuePair("vid", String.valueOf(vid));
 		parameters[1] = new BasicNameValuePair("parent", String.valueOf(parent));
 
