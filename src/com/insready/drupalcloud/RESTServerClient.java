@@ -299,7 +299,7 @@ public class RESTServerClient {
 			String name = jsr.nextName();
 			if (name.equals("session_name")) {
 				session = jsr.nextString() + "=";
-			} else if (name.equals("session_name")) {
+			} else if (name.equals("sessid")) {
 				session += jsr.nextString();
 			} else {
 				jsr.skipValue();
@@ -323,18 +323,11 @@ public class RESTServerClient {
 		return call(uri, parameters);
 	}
 
-	public String viewsGet(String view_name, String display_id, String args,
-			int offset, int limit) throws ServiceNotAvailableException {
-		// TODO Auto-generated method stub
-		String uri = mENDPOIN + "views/" + view_name + "?";
-		String[] ary = args.split("/");
-		int arylength = ary.length;
-		String arg = "args[0]=" + ary[0] + "&";
-		for (int i = 1; i < arylength; i++) {
-			arg += "args[" + i + "]=" + ary[i] + "&";
-		}
-		uri = uri + arg;
-		// TODO String result = callGet(uri);
-		return null;
+	public JsonReader viewsGet(String view_name, String display_id,
+			String args, int offset, int limit)
+			throws ServiceNotAvailableException {
+		String uri = mENDPOIN + "views/" + view_name + "?" + args;
+		JsonReader result = new JsonReader(callGet(uri));
+		return result;
 	}
 }
