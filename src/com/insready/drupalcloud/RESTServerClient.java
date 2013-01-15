@@ -31,7 +31,6 @@ public class RESTServerClient {
 	public HttpGet mSERVERGET;
 	public HttpPost mSERVERPOST;
 	public String mENDPOIN;
-	public static String mDOMAIN;
 	private HttpClient mClient = new DefaultHttpClient();
 	private List<NameValuePair> mPairs = new ArrayList<NameValuePair>(15);
 	private Context mCtx;
@@ -39,10 +38,9 @@ public class RESTServerClient {
 	public static Long mSESSION_LIFETIME;
 
 	public RESTServerClient(Context _ctx, String _prefs_auth, String _server,
-			String _domain, Long _session_lifetime) {
+			String _endpoint, Long _session_lifetime) {
 		mPREFS_AUTH = _prefs_auth;
-		mDOMAIN = _domain;
-		mENDPOIN = _server;
+		mENDPOIN = _server + _endpoint;
 		mCtx = _ctx;
 		mSESSION_LIFETIME = _session_lifetime;
 	}
