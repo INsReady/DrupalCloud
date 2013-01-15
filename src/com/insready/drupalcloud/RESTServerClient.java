@@ -324,7 +324,17 @@ public class RESTServerClient {
 	public JsonReader viewsGet(String view_name, String display_id,
 			String args, int offset, int limit)
 			throws ServiceNotAvailableException {
-		String uri = mENDPOIN + "views/" + view_name + "?" + args;
+		String uri = mENDPOIN + "views/" + view_name + "?" + "limit=" + limit
+				+ "&offset=" + offset;
+
+		if (args != null) {
+			uri += "&args=" + args;
+		}
+
+		if (display_id != null) {
+			uri += "&display_id=" + display_id;
+		}
+
 		JsonReader result = new JsonReader(callGet(uri));
 		return result;
 	}
