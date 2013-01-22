@@ -25,8 +25,7 @@ public class Test extends Activity {
 		mText = (TextView) findViewById(R.id.text);
 
 		// Create a sandbox connection setup from value.xml
-		RESTServerClient sandbox = new RESTServerClient(this,
-				getString(R.string.sharedpreferences_name),
+		RESTServerClient sandbox = new RESTServerClient(
 				getString(R.string.SERVER), getString(R.string.ENDPOINT),
 				Long.valueOf(getString(R.string.SESSION_LIFETIME)));
 
