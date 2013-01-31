@@ -27,12 +27,9 @@ public class RESTServerClient {
 	private HttpClient mClient = new DefaultHttpClient();
 	private List<NameValuePair> mPairs = new ArrayList<NameValuePair>(15);
 	private String mSession = null;
-	public static Long mSESSION_LIFETIME;
 
-	public RESTServerClient(String _server, String _endpoint,
-			Long _session_lifetime) {
+	public RESTServerClient(String _server, String _endpoint) {
 		mENDPOIN = _server + _endpoint;
-		mSESSION_LIFETIME = _session_lifetime;
 	}
 
 	private String getSession() {

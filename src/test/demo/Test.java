@@ -26,8 +26,7 @@ public class Test extends Activity {
 
 		// Create a sandbox connection setup from value.xml
 		RESTServerClient sandbox = new RESTServerClient(
-				getString(R.string.SERVER), getString(R.string.ENDPOINT),
-				Long.valueOf(getString(R.string.SESSION_LIFETIME)));
+				getString(R.string.SERVER), getString(R.string.ENDPOINT));
 
 		new ServiceWrapper().execute(sandbox);
 	}
