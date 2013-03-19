@@ -7,7 +7,8 @@ At the moment, there are two kinds of implementations.
 
 Setup for development:
 1. Import this library to your IDE (Eclipse), and check this project as a library
-'''Project Properties > Android > (Library) Add'''
+"Project Properties > Android > (Library) Add"
+
 2. Create your a new project, and configure it to use DrupalCloud library 
 
 Server Required settings:
