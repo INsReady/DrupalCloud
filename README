@@ -24,3 +24,5 @@ Testing:
 3. Run DrupalCloud project as an Android application
 4. If you see the content of your node 1, then you complete the hello world testing.
 
+IMPORTANT:Clean-url in drupal must be enabled.
+
