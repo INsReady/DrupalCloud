@@ -229,4 +229,22 @@ public class RESTServerClient {
 		JsonReader result = new JsonReader(callGet(uri));
 		return result;
 	}
+	/***
+	 * Register a user in your site.
+	 * @param username 
+	 * @param password
+	 * @param email 
+	 * @return
+	 */
+	public JsonReader userRegister(String username, String password, String email)
+			throws ServiceNotAvailableException, IOException {
+		String uri = mENDPOIN + "user/register";
+		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		parameters[0] = new BasicNameValuePair("name", username);
+		parameters[1] = new BasicNameValuePair("pass", password);
+		parameters[2] = new BasicNameValuePair("mail", email);
+		JsonReader jsr = new JsonReader(callPost(uri, parameters));
+		return jsr;
+	
+	}
 }
