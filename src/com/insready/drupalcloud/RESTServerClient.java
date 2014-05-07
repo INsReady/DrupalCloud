@@ -24,12 +24,15 @@ public class RESTServerClient {
 	public HttpGet mSERVERGET;
 	public HttpPost mSERVERPOST;
 	public String mENDPOIN;
+	public String mSERVER;
 	private HttpClient mClient = new DefaultHttpClient();
 	private List<NameValuePair> mPairs = new ArrayList<NameValuePair>(15);
 	private String mSession = null;
+	private String mToken = null;
 
 	public RESTServerClient(String _server, String _endpoint) {
 		mENDPOIN = _server + _endpoint;
+		mSERVER = _server;
 	}
 
 	private String getSession() {
@@ -40,12 +43,24 @@ public class RESTServerClient {
 		mSession = _session;
 	}
 
+	private String getToken() {
+		return mToken;
+	}
+	
+	public void setToken(String _token) {
+		mToken = _token;
+	}
+
 	public InputStreamReader callPost(String url,
 			BasicNameValuePair[] parameters)
 			throws ServiceNotAvailableException, ClientProtocolException,
 			IOException {
 		mSERVERPOST = new HttpPost(url);
 		mPairs.clear();
+		// Call "X-CSRF-Token" token from service
+		if (getToken() != null) {
+			mSERVERPOST.setHeader("X-CSRF-Token", getToken());
+		}
 		if (getSession() != null) {
 			mSERVERPOST.setHeader("Cookie", getSession());
 		}
@@ -57,7 +72,6 @@ public class RESTServerClient {
 		InputStream is = response.getEntity().getContent();
 		InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 		return isr;
-
 	}
 
 	public InputStreamReader callGet(String url)
@@ -214,5 +228,23 @@ public class RESTServerClient {
 
 		JsonReader result = new JsonReader(callGet(uri));
 		return result;
+	}
+	/***
+	 * Register a user in your site.
+	 * @param username 
+	 * @param password
+	 * @param email 
+	 * @return
+	 */
+	public JsonReader userRegister(String username, String password, String email)
+			throws ServiceNotAvailableException, IOException {
+		String uri = mENDPOIN + "user/register";
+		BasicNameValuePair[] parameters = new BasicNameValuePair[3];
+		parameters[0] = new BasicNameValuePair("name", username);
+		parameters[1] = new BasicNameValuePair("pass", password);
+		parameters[2] = new BasicNameValuePair("mail", email);
+		JsonReader jsr = new JsonReader(callPost(uri, parameters));
+		return jsr;
+	
 	}
 }
